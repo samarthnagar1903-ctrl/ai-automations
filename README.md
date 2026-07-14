@@ -137,7 +137,7 @@ When the lead is qualified in Workflow 1, the following tool description and JSO
 }
 ```
 
-⚠️ **Important build note from the design:** the Relevance AI tool node needs to be reconfigured before reuse — clone it and update the request body to match the **v2 endpoint format**, not v1. Sending the wrong payload shape to the wrong endpoint is a common cause of empty output (see the endpoint URL differences below).
+**Important build note from the design:** the Relevance AI tool node needs to be reconfigured before reuse — clone it and update the request body to match the **v2 endpoint format**, not v1. Sending the wrong payload shape to the wrong endpoint is a common cause of empty output (see the endpoint URL differences below).
 
 ---
 

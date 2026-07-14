@@ -1,8 +1,8 @@
-# AI Agent Build #2: Inbound Lead Qualification Agent
+ Inbound Lead Qualification Agent
 
 **Built on:** n8n
 **Type:** Automation / AI Agent Workflow
-**Author:** Big Boy Recruits (Dallas-based recruitment firm)
+**Author:** Big Boy Recruits (A recruitment firm)
 
 ---
 

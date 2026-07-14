@@ -210,7 +210,3 @@ If the lead is a development agency, output 'Agency'
 - `Qualified_Lead_Classifier_AND_Notifier.json` — Workflow 2 automation template
 
 *(Import both JSON files into n8n via Workflows → Import from File)*
-
----
-
-**Related reference video:** [AI Agent Build walkthrough](https://www.youtube.com/watch?v=w0H1-b044KY)

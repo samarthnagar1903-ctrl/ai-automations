@@ -1,0 +1,328 @@
+{
+  "name": "Lead Qualification Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Work with us ",
+        "formDescription": "Provide your details and we will be in touch !",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "What is your name ? ",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "What is your email ?",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "What is your company website ? ",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "What can i help you with ?",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -1632,
+        -448
+      ],
+      "id": "1bb4545e-c627-4436-858a-4b73c7834b14",
+      "name": "On form submission",
+      "webhookId": "8e07af98-bdf3-46bf-ba95-83cb73c3a3eb"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api-f1db6c.stack.tryrelevance.com/latest/studios/78f4b71c-be72-4f40-84fe-958ceb65c550/trigger_webhook?project=87ae3c4f-2276-4278-a585-818dbbc1077f",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"company_url\":\"https://www.renvora.in/\"}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -1408,
+        -448
+      ],
+      "id": "7c906079-12ae-4fcb-a64f-25da97fc206a",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an inbound lead qualification agent. Your job is to analyze the form submission and company research provided and decide whether they are qualified to work with Big Boy Recruits, a Dallas based recruitment firm.\n\nBig Boy Recruits specializes in IT and tech talent placements. We are specialists in capturing talent post liquidiation and can therefore provide talent to our clients as we hit the market. \n\nWe only work with Software based businesses, e.g. SaaS companies or development agencies. These companies are willing to pay much more developers than your average marketing company or local business, therefore we only work with them.\n\nYour job is to determine if the lead you are provided with is a good fit for Big Boy Recruits, and if so call the 'lead_is_qualified' tool and send the lead information to it. If the lead is not qualified, then you must trigger the gmail send email tool for us to respond to them letting them know we are unable to help them.\n\nHere is the lead information for you to analyze:\nName: {{ $('On form submission').item.json['What is your name ? '] }}\nCompany URL: {{ $('On form submission').item.json['What is your company website ? '] }}\nMessage/Request:{{ $('On form submission').item.json['What can i help you with ?'] }}\nCompany Research (scraped from their website):{{ $json.answer }}\n",
+        "needsFallback": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -1168,
+        -448
+      ],
+      "id": "b5a4f9d0-eb5b-4b76-9064-9adb297147fd",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -1472,
+        -224
+      ],
+      "id": "52626529-ceca-42c3-8b84-7359403bd24d",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "z8zyT87NFOObJ43F",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('On form submission').item.json['What is your email ?'] }}",
+        "subject": "Thanks for your interest !",
+        "emailType": "text",
+        "message": "=Hi {{ $('On form submission').item.json['What is your name ? '] }},\n\nThanks for your interest in Big Boy Recruitment services! AS we specialze in recruitment for software businesses such as SaaS and development agencies, we're not a good fit for you based on your company's industry.\n\nPlease let me know if you'd like us to connect you with one of our partners who specialzies in dealing with your needs.\n\nCheers,\n\nSamarth Nagar\nHead of Sales, Big Boy Recruits (BBR)\nDallas, TX",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        -784,
+        -208
+      ],
+      "id": "be24dce6-f3de-4bf5-af30-5ed8e1167d02",
+      "name": "Send a message in Gmail",
+      "webhookId": "80541df6-a0b0-44d7-b5db-0809bfcf917e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "KISVDLBS203ONF9v",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "If the lead is qualified to work with Big Boy Recruits, e.g. they are a software based business like SaaS or development agencies, then trigger this tool and send the lead data in the following format (the data in this is dummy and you should replace it with the correct data):\n\n{\n  \"name\": \"a name\",\n  \"email\": \"adm@gmail.com\",\n  \"message\": \"I want a new dev\",\n\"qualified\": true ,\n  \"company_information\": \"this comapny is from Miranda...big bit of info here\"\n}",
+        "workflowId": {
+          "__rl": true,
+          "value": "581aHZJDCAY14RLl",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/581aHZJDCAY14RLl",
+          "cachedResultName": "Qualified lead Classifier And Notifier"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Qualified": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Qualified', `If the lead is qualified based on our criteria , set to true`, 'boolean') }}",
+            "Lead Name": "={{ $('On form submission').item.json['What is your name ? '] }}",
+            "Email": "={{ $('On form submission').item.json['What is your email ?'] }}",
+            "Company Information": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Company_Information', `A short summary of the company details and the industry that they are in .`, 'string') }}",
+            "Message": "={{ $('On form submission').item.json['What can i help you with ?'] }}"
+          },
+          "matchingColumns": [
+            "Lead Name"
+          ],
+          "schema": [
+            {
+              "id": "Lead Name",
+              "displayName": "Lead Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Company Information",
+              "displayName": "Company Information",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Qualified",
+              "displayName": "Qualified",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "boolean",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -1056,
+        -224
+      ],
+      "id": "6f0a03a7-b3ee-4f44-a53b-cac4571c8373",
+      "name": "Call 'Qualified lead Classifier And Notifier'"
+    },
+    {
+      "parameters": {
+        "model": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "options": {
+          "maxRetries": 2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -1280,
+        -224
+      ],
+      "id": "f8920c9a-ed5f-4e23-9d64-8dcae3e0289f",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "KS5qfmUVpQ34X6Ne",
+          "name": "OpenRouter account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "On form submission": [
+      {
+        "json": {
+          "What is your name ? ": "SAMARTH NAGAR",
+          "What is your email ?": "samarth.nagar.27n@jaipuria.ac.in",
+          "What is your company website ? ": "https://www.renvora.in/",
+          "What can i help you with ?": "we want to build ai agent for  our sales team",
+          "submittedAt": "2026-07-14T02:23:38.026-04:00",
+          "formMode": "test"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Qualified lead Classifier And Notifier'": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "e9e23fc6-aaac-4c12-96a0-2adae0eb30ec",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bd9860044972816018be4babb36c8353ab8c1a2fea3203e4a1ecac54aff617ac"
+  },
+  "nodeGroups": [],
+  "id": "6q3EnpX9OPyjW57k",
+  "tags": []
+}

@@ -1,0 +1,210 @@
+{
+  "name": "Qualified lead Classifier And Notifier",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "Lead Name"
+            },
+            {
+              "name": "Email"
+            },
+            {
+              "name": "Message"
+            },
+            {
+              "name": "Company Information"
+            },
+            {
+              "name": "Qualified",
+              "type": "boolean"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -912,
+        48
+      ],
+      "id": "f2c4e5d6-41ff-47f2-98bb-b8d24482e994",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=We have a new inbound lead and we need you to classify it into either SaaS or development agency category.\n\nHere is the lead information:\nName: {{ $json['Lead Name'] }}\nRequest: {{ $json.Message }}\nCompany Information: {{ $json['Company Information'] }}\n\n\nIf the lead a SaaS company, output 'SaaS'\nIf the lead is a development agency, output 'Agency'"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        -704,
+        48
+      ],
+      "id": "4b384a4d-ec46-452d-a950-ba9892cae12e",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "z8zyT87NFOObJ43F",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0bc13dcc-d644-4c87-8272-dbc3f821e2ed",
+              "leftValue": "={{ $('When Executed by Another Workflow').item.json.Message }}",
+              "rightValue": "Agency",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -352,
+        48
+      ],
+      "id": "724afa22-4823-4955-8291-3e16e39dd3a2",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('When Executed by Another Workflow').item.json.Email }}",
+        "subject": "New AgentsLead",
+        "message": "=New Agency lead Man !! GO GET THEM{{ $('When Executed by Another Workflow').item.json['Company Information'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -48,
+        -176
+      ],
+      "id": "1a3010a1-2b5c-4013-a39b-eb07dd3a3a0f",
+      "name": "New Agency Lead",
+      "webhookId": "adba926b-dc59-4023-bbee-2c9758f27d8f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "KISVDLBS203ONF9v",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('When Executed by Another Workflow').item.json.Email }}",
+        "subject": "New Saas Lead",
+        "emailType": "text",
+        "message": "=New Agency lead Man !! GO GET THEM{{ $('When Executed by Another Workflow').item.json['Company Information'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -16,
+        176
+      ],
+      "id": "19414d48-4ac4-4203-aa12-aff142982ac1",
+      "name": "New SaaS Lead",
+      "webhookId": "adba926b-dc59-4023-bbee-2c9758f27d8f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "KISVDLBS203ONF9v",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "New Agency Lead",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "New SaaS Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "Asia/Kolkata",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "e7860e4c-c8b5-4591-9764-e3966a42e02b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bd9860044972816018be4babb36c8353ab8c1a2fea3203e4a1ecac54aff617ac"
+  },
+  "nodeGroups": [],
+  "id": "581aHZJDCAY14RLl",
+  "tags": []
+}
